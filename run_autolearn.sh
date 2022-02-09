@@ -1,0 +1,1 @@
+python2 main.py  2>&1 |tee  Logs/run.log 
