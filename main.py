@@ -105,22 +105,23 @@ def distcorr(X, Y):
 
 
 def dependent(x,th1,fold):
-    ans=[]
-    ans1=[]
+    linear_correlated=[]
+    nonlinear_correlated=[]
     m,n=x.shape
     cnt=0
     cnt1=0
+    # can be optimized, i, j should be orth
     for i in range(0,n):
        for j in range(0,n):
            if (i!=j):
-              a,b=pearsonr(x[:,i][:,np.newaxis],x[:,j][:,np.newaxis])
+              #a,b=pearsonr(x[:,i][:,np.newaxis],x[:,j][:,np.newaxis])
               if(distcorr(np.array(x[:,i]),np.array(x[:,j]))>=th1):
                a1=i,j
-               ans.append(a1)
+               linear_correlated.append(a1)
                cnt=cnt+1
               elif(distcorr(np.array(x[:,i]),np.array(x[:,j]))>0 and distcorr(np.array(x[:,i]),np.array(x[:,j]))<0.7):
                zz=i,j
-               ans1.append(zz)
+               nonlinear_correlated.append(zz)
                cnt1=cnt1+1
 
        #print(i)
@@ -129,14 +130,16 @@ def dependent(x,th1,fold):
     if os.path.exists('sonar_nonlinear_correlated_{}.csv'.format(fold)):                          # Name of Ouput file generated
        os.remove('sonar_nonlinear_correlated_{}.csv'.format(fold))
 
-    np.savetxt("sonar_linear_correlated_{}.csv".format(fold),ans,delimiter=",",fmt="%.5f")
-    np.savetxt("sonar_nonlinear_correlated_{}.csv".format(fold),ans1,delimiter=",",fmt="%s")
+    np.savetxt("sonar_linear_correlated_{}.csv".format(fold),linear_correlated,delimiter=",",fmt="%.5f")
+    np.savetxt("sonar_nonlinear_correlated_{}.csv".format(fold),nonlinear_correlated,delimiter=",",fmt="%s")
 
     print("This is fold no - {}".format(fold))
     print("Number of linear correlated features are:")
     print(cnt)
     print("Number of non linear correlated features are:")
     print(cnt1)
+    return linear_correlated, nonlinear_correlated 
+
 
 
 ###########################################################################
@@ -203,6 +206,7 @@ def linear(TR,TST,fold):
            tt,uu=np.array(TST[:,(int)(val[j][0])][:,np.newaxis]),np.array(TST[:,(int)(val[j][1])])
            y_train=clf.fit(rr,ss).predict(rr)[:,np.newaxis]
            y_test=clf.fit(rr,ss).predict(tt)[:,np.newaxis]
+           # this two can be different??
            predicted_train=np.hstack([predicted_train,y_train])
            predicted_test=np.hstack([predicted_test,y_test])
 
@@ -228,6 +232,7 @@ def linear(TR,TST,fold):
             np.savetxt(myfile,predicted_test_final,delimiter=",",fmt="%s")
     with open("sonar_related_lineartrain_{}.csv".format(fold), "wb") as myfile:
             np.savetxt(myfile,predicted_train_final,delimiter=",",fmt="%s")
+    return  predicted_train_final, predicted_test_final
 
 
 ###########################################################################
@@ -292,6 +297,7 @@ def nonlinear(TR,TST,fold):
             np.savetxt(myfile,predicted_test_final,delimiter=",")
     with open("sonar_related_nonlineartrain_{}.csv".format(fold), "wb") as myfile:
             np.savetxt(myfile,predicted_train_final,delimiter=",")
+    return  predicted_train_final, predicted_test_final
 
 
 #############################################################################
@@ -333,7 +339,8 @@ def stable(ress,test,labels):   # ress is training data
     dataset3=test[:,finale]
     #dataset3=test.iloc[:,finale]
 
-    if os.path.exists("sonar_stable_testfeatures.csv"):                           # Name of Ouput file generated
+
+    """if os.path.exists("sonar_stable_testfeatures.csv"):                           # Name of Ouput file generated
        os.remove("sonar_stable_testfeatures.csv")
     if os.path.exists("sonar_stable_trainfeatures.csv"):                          # Name of Ouput file generated
        os.remove("sonar_stable_trainfeatures.csv")
@@ -341,7 +348,7 @@ def stable(ress,test,labels):   # ress is training data
     with open("sonar_stable_testfeatures.csv", "wb") as myfile:
             np.savetxt(myfile,dataset3,delimiter=",",fmt="%s")
     with open("sonar_stable_trainfeatures.csv", "wb") as myfile:
-            np.savetxt(myfile,dataset1,delimiter=",",fmt="%s")
+            np.savetxt(myfile,dataset1,delimiter=",",fmt="%s")"""
 
 #-----------------------------------------------------------------------------------
     # check the inter-feature dependence - 2nd phase of ensemble
@@ -371,7 +378,7 @@ def stable(ress,test,labels):   # ress is training data
     dataset2=ress[:,ensemble_finale]
     dataset4=test[:,ensemble_finale]
 
-    if os.path.exists("sonar_ensemble_testfeatures.csv"):                           # Name of Ouput file generated
+    """if os.path.exists("sonar_ensemble_testfeatures.csv"):                           # Name of Ouput file generated
        os.remove("sonar_ensemble_testfeatures.csv")
     if os.path.exists("sonar_ensemble_trainfeatures.csv"):                          # Name of Ouput file generated
        os.remove("sonar_ensemble_trainfeatures.csv")
@@ -379,7 +386,9 @@ def stable(ress,test,labels):   # ress is training data
     with open("sonar_ensemble_testfeatures.csv", "wb") as myfile:
             np.savetxt(myfile,dataset4,delimiter=",",fmt="%s")
     with open("sonar_ensemble_trainfeatures.csv", "wb") as myfile:
-            np.savetxt(myfile,dataset2,delimiter=",",fmt="%s")
+            np.savetxt(myfile,dataset2,delimiter=",",fmt="%s")"""
+    return  dataset1, dataset3, dataset2, dataset4
+
 
 
 #############################################################################
@@ -416,7 +425,8 @@ def original_ig(ress,test,labels):   # ress is training data
     dataset3=test[:,finale]
     #dataset3=test.iloc[:,finale]
 
-    if os.path.exists("sonar_original_ig_testfeatures.csv"):                           # Name of Ouput file generated
+
+    """if os.path.exists("sonar_original_ig_testfeatures.csv"):                           # Name of Ouput file generated
        os.remove("sonar_original_ig_testfeatures.csv")
     if os.path.exists("sonar_original_ig_trainfeatures.csv"):                          # Name of Ouput file generated
        os.remove("sonar_original_ig_trainfeatures.csv")
@@ -424,7 +434,8 @@ def original_ig(ress,test,labels):   # ress is training data
     with open("sonar_original_ig_testfeatures.csv", "wb") as myfile:
             np.savetxt(myfile,dataset3,delimiter=",",fmt="%s")
     with open("sonar_original_ig_trainfeatures.csv", "wb") as myfile:
-            np.savetxt(myfile,dataset1,delimiter=",",fmt="%s")
+            np.savetxt(myfile,dataset1,delimiter=",",fmt="%s")"""
+    return dataset1, dataset3
 
 ###############################################################################################################################################
                                                            # Main Function
@@ -509,21 +520,21 @@ if __name__ == "__main__":
                 # Computing Accuracy for each fold of Cross Validation
    #############################################################################
 
-   original_ig(train1,test1,train1Y)  # No normalization needed for original training & testing
-   original_ig_train1=pd.read_csv('sonar_original_ig_trainfeatures.csv', header=None)
-   original_ig_test1=pd.read_csv('sonar_original_ig_testfeatures.csv',header=None)
+   original_ig_train1, original_ig_test1=original_ig(train1,test1,train1Y)  # No normalization needed for original training & testing
+   
 
-   original_ig_train1=original_ig_train1.as_matrix()
-   original_ig_test1=original_ig_test1.as_matrix()
+   """original_ig_train1=original_ig_train1.as_matrix()
+   original_ig_test1=original_ig_test1.as_matrix()"""
 
-   dependent(original_ig_train1, 0.7, 1)
-   linear(original_ig_train1, original_ig_test1, 1)
-   nonlinear(original_ig_train1, original_ig_test1, 1)
+   linear_correlated_1,nonlinear_correlated_1=dependent(original_ig_train1, 0.7, 1)
+   a2,a1=linear(original_ig_train1, original_ig_test1, 1)
+   a4,a3=nonlinear(original_ig_train1, original_ig_test1, 1)
 
-   a1=pd.read_csv('sonar_related_lineartest_1.csv',header=None)          # all predicted feature files
+   """a1=pd.read_csv('sonar_related_lineartest_1.csv',header=None)          # all predicted feature files
    a2=pd.read_csv('sonar_related_lineartrain_1.csv',header=None)
    a3=pd.read_csv('sonar_related_nonlineartest_1.csv',header=None)
-   a4=pd.read_csv('sonar_related_nonlineartrain_1.csv',header=None)
+   a4=pd.read_csv('sonar_related_nonlineartrain_1.csv',header=None)"""
+
 
    #r4=a4
    #r3=a3
@@ -534,9 +545,9 @@ if __name__ == "__main__":
    p2=scaler.transform(r4)     # Normalized Train
    p1=scaler.transform(r3)     # Normalized Test
 
-   stable(p2,p1,train1Y)
-   f1=pd.read_csv('sonar_ensemble_trainfeatures.csv',header=None)
-   f2=pd.read_csv('sonar_ensemble_testfeatures.csv',header=None)
+   f1,f2,st_f1,st_f2=stable(p2,p1,train1Y)
+   """f1=pd.read_csv('sonar_ensemble_trainfeatures.csv',header=None)
+   f2=pd.read_csv('sonar_ensemble_testfeatures.csv',header=None)"""
 
    scaler=StandardScaler().fit(f1)
    e_f1=scaler.transform(f1)
@@ -556,8 +567,8 @@ if __name__ == "__main__":
    y2=scaler.transform(y2Y)          # note - when features need to be merged with R2R, we need to do normalization.
    y1=scaler.transform(y1Y)
 
-   st_f1=pd.read_csv('sonar_stable_trainfeatures.csv',header=None)
-   st_f2=pd.read_csv('sonar_stable_testfeatures.csv',header=None)
+   """st_f1=pd.read_csv('sonar_stable_trainfeatures.csv',header=None)
+   st_f2=pd.read_csv('sonar_stable_testfeatures.csv',header=None)"""
 
    st_x1X=np.hstack([original_ig_test1, st_f2])  # original test features, selected by IG, f2 is feature space after stability selection.
    st_x2X=np.hstack([original_ig_train1, st_f1])
@@ -635,12 +646,12 @@ if __name__ == "__main__":
    print("################################################################################")
    print("################################################################################")
 
-   original_ig(train2,test2,train2Y)  # No normalization needed for original training & testing
-   original_ig_train2=pd.read_csv('sonar_original_ig_trainfeatures.csv',header=None)
+   original_ig_train2,original_ig_test2=original_ig(train2,test2,train2Y)  # No normalization needed for original training & testing
+   """original_ig_train2=pd.read_csv('sonar_original_ig_trainfeatures.csv',header=None)
    original_ig_test2=pd.read_csv('sonar_original_ig_testfeatures.csv',header=None)
 
    original_ig_train2=original_ig_train2.as_matrix()
-   original_ig_test2=original_ig_test2.as_matrix()
+   original_ig_test2=original_ig_test2.as_matrix()"""
 
    dependent(original_ig_train2, 0.7, 2)
    linear(original_ig_train2, original_ig_test2, 2)
@@ -660,9 +671,9 @@ if __name__ == "__main__":
    p2=scaler.transform(r4)
    p1=scaler.transform(r3)
 
-   stable(p2,p1,train2Y)
-   f1=pd.read_csv('sonar_ensemble_trainfeatures.csv',header=None)
-   f2=pd.read_csv('sonar_ensemble_testfeatures.csv',header=None)
+   f1,f2,st_f1,st_f2=stable(p2,p1,train2Y)
+   """f1=pd.read_csv('sonar_ensemble_trainfeatures.csv',header=None)
+   f2=pd.read_csv('sonar_ensemble_testfeatures.csv',header=None)"""
 
    scaler=StandardScaler().fit(f1)
    e_f1=scaler.transform(f1)
@@ -682,8 +693,8 @@ if __name__ == "__main__":
    y2=scaler.transform(y2Y)          # note - when features need to be merged with R2R, we need to do normalization.
    y1=scaler.transform(y1Y)
 
-   st_f1=pd.read_csv('sonar_stable_trainfeatures.csv',header=None)
-   st_f2=pd.read_csv('sonar_stable_testfeatures.csv',header=None)
+   """st_f1=pd.read_csv('sonar_stable_trainfeatures.csv',header=None)
+   st_f2=pd.read_csv('sonar_stable_testfeatures.csv',header=None)"""
 
    st_x1X=np.hstack([original_ig_test2, st_f2])  # original test features, selected by IG, f2 is feature space after stability selection.
    st_x2X=np.hstack([original_ig_train2, st_f1])
@@ -754,12 +765,12 @@ if __name__ == "__main__":
    print("################################################################################")
    print("################################################################################")
 
-   original_ig(train5,test5,train5Y)  # No normalization needed for original training & testing
-   original_ig_train5=pd.read_csv('sonar_original_ig_trainfeatures.csv',header=None)
+   original_ig_train5,original_ig_test5=original_ig(train5,test5,train5Y)  # No normalization needed for original training & testing
+   """original_ig_train5=pd.read_csv('sonar_original_ig_trainfeatures.csv',header=None)
    original_ig_test5=pd.read_csv('sonar_original_ig_testfeatures.csv',header=None)
 
    original_ig_train5=original_ig_train5.as_matrix()
-   original_ig_test5=original_ig_test5.as_matrix()
+   original_ig_test5=original_ig_test5.as_matrix()"""
 
    dependent(original_ig_train5, 0.7, 5)
    linear(original_ig_train5, original_ig_test5, 5)
@@ -778,9 +789,9 @@ if __name__ == "__main__":
    p2=scaler.transform(r4)
    p1=scaler.transform(r3)
 
-   stable(p2,p1,train5Y)
-   f1=pd.read_csv('sonar_ensemble_trainfeatures.csv',header=None)
-   f2=pd.read_csv('sonar_ensemble_testfeatures.csv',header=None)
+   f1,f2,st_f1,st_f2=stable(p2,p1,train5Y)
+   """f1=pd.read_csv('sonar_ensemble_trainfeatures.csv',header=None)
+   f2=pd.read_csv('sonar_ensemble_testfeatures.csv',header=None)"""
 
    scaler=StandardScaler().fit(f1)
    e_f1=scaler.transform(f1)
@@ -800,8 +811,8 @@ if __name__ == "__main__":
    y2=scaler.transform(y2Y)          # note - when features need to be merged with R2R, we need to do normalization.
    y1=scaler.transform(y1Y)
 
-   st_f1=pd.read_csv('sonar_stable_trainfeatures.csv',header=None)
-   st_f2=pd.read_csv('sonar_stable_testfeatures.csv',header=None)
+   """st_f1=pd.read_csv('sonar_stable_trainfeatures.csv',header=None)
+   st_f2=pd.read_csv('sonar_stable_testfeatures.csv',header=None)"""
 
    st_x1X=np.hstack([original_ig_test5, st_f2])  # original test features, selected by IG, f2 is feature space after stability selection.
    st_x2X=np.hstack([original_ig_train5, st_f1])
@@ -872,12 +883,12 @@ if __name__ == "__main__":
    print("################################################################################")
 
 
-   original_ig(train4,test4,train4Y)  # No normalization needed for original training & testing
-   original_ig_train4=pd.read_csv('sonar_original_ig_trainfeatures.csv',header=None)
+   original_ig_train4,original_ig_test4=original_ig(train4,test4,train4Y)  # No normalization needed for original training & testing
+   """original_ig_train4=pd.read_csv('sonar_original_ig_trainfeatures.csv',header=None)
    original_ig_test4=pd.read_csv('sonar_original_ig_testfeatures.csv',header=None)
 
    original_ig_train4=original_ig_train4.as_matrix()
-   original_ig_test4=original_ig_test4.as_matrix()
+   original_ig_test4=original_ig_test4.as_matrix()"""
 
    dependent(original_ig_train4,0.7, 4)
    linear(original_ig_train4,original_ig_test4, 4)
@@ -896,9 +907,9 @@ if __name__ == "__main__":
    p2=scaler.transform(r4)
    p1=scaler.transform(r3)
 
-   stable(p2,p1,train4Y)
-   f1=pd.read_csv('sonar_ensemble_trainfeatures.csv',header=None)
-   f2=pd.read_csv('sonar_ensemble_testfeatures.csv',header=None)
+   f1,f2,st_f1,st_f2=stable(p2,p1,train4Y)
+   """f1=pd.read_csv('sonar_ensemble_trainfeatures.csv',header=None)
+   f2=pd.read_csv('sonar_ensemble_testfeatures.csv',header=None)"""
 
    scaler=StandardScaler().fit(f1)
    e_f1=scaler.transform(f1)
@@ -918,8 +929,8 @@ if __name__ == "__main__":
    y2=scaler.transform(y2Y)          # note - when features need to be merged with R2R, we need to do normalization.
    y1=scaler.transform(y1Y)
 
-   st_f1=pd.read_csv('sonar_stable_trainfeatures.csv',header=None)
-   st_f2=pd.read_csv('sonar_stable_testfeatures.csv',header=None)
+   """st_f1=pd.read_csv('sonar_stable_trainfeatures.csv',header=None)
+   st_f2=pd.read_csv('sonar_stable_testfeatures.csv',header=None)"""
 
    st_x1X=np.hstack([original_ig_test4, st_f2])  # original test features, selected by IG, f2 is feature space after stability selection.
    st_x2X=np.hstack([original_ig_train4, st_f1])
@@ -989,12 +1000,12 @@ if __name__ == "__main__":
    print("################################################################################")
    print("################################################################################")
 
-   original_ig(train3,test3,train3Y)  # No normalization needed for original training & testing
-   original_ig_train3=pd.read_csv('sonar_original_ig_trainfeatures.csv',header=None)
+   original_ig_train3,original_ig_test3=original_ig(train3,test3,train3Y)  # No normalization needed for original training & testing
+   """original_ig_train3=pd.read_csv('sonar_original_ig_trainfeatures.csv',header=None)
    original_ig_test3=pd.read_csv('sonar_original_ig_testfeatures.csv',header=None)
 
    original_ig_train3=original_ig_train3.as_matrix()
-   original_ig_test3=original_ig_test3.as_matrix()
+   original_ig_test3=original_ig_test3.as_matrix()"""
 
    dependent(original_ig_train3, 0.7, 3)
    linear(original_ig_train3,original_ig_test3, 3)
@@ -1012,9 +1023,9 @@ if __name__ == "__main__":
    p2=scaler.transform(r4)
    p1=scaler.transform(r3)
 
-   stable(p2,p1,train3Y)
-   f1=pd.read_csv('sonar_ensemble_trainfeatures.csv',header=None)
-   f2=pd.read_csv('sonar_ensemble_testfeatures.csv',header=None)
+   f1,f2,st_f1,st_f2=stable(p2,p1,train3Y)
+   """f1=pd.read_csv('sonar_ensemble_trainfeatures.csv',header=None)
+   f2=pd.read_csv('sonar_ensemble_testfeatures.csv',header=None)"""
 
    scaler=StandardScaler().fit(f1)
    e_f1=scaler.transform(f1)
@@ -1034,8 +1045,8 @@ if __name__ == "__main__":
    y2=scaler.transform(y2Y)          # note - when features need to be merged with R2R, we need to do normalization.
    y1=scaler.transform(y1Y)
 
-   st_f1=pd.read_csv('sonar_stable_trainfeatures.csv',header=None)
-   st_f2=pd.read_csv('sonar_stable_testfeatures.csv',header=None)
+   """st_f1=pd.read_csv('sonar_stable_trainfeatures.csv',header=None)
+   st_f2=pd.read_csv('sonar_stable_testfeatures.csv',header=None)"""
 
    st_x1X=np.hstack([original_ig_test3, st_f2])  # original test features, selected by IG, f2 is feature space after stability selection.
    st_x2X=np.hstack([original_ig_train3, st_f1])
